@@ -10,7 +10,7 @@ env:
   WORKDIR: './src/'
 defaults:
   run:
-    working-directory: ${{env.WORKDIR}}
+    working-directory: './src/'
 
 jobs:
   build-and-deploy:

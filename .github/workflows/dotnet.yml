@@ -1,32 +1,35 @@
-name: .NET
+name: Deploy DotNet project to function app with a Windows environment
 
 on:
- # Configureer triggers voor een push op de main branch
- # Configureer triggers voor een pull request
- # Configureer een trigger voor een handmatige build
+  [push]:
+  [workflow_dispatch]:
+
+env:
+  AZURE_FUNCTIONAPP_NAME: workshop-function-8  # set this to your application's name
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './src'    # set this to the path to your web app project, defaults to the repository root
+  DOTNET_VERSION: '6.x'              # set this to the dotnet version to use
 
 jobs:
-  build:
-
+  build-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      WORKDIR: "TODO"
-      CONFIG: "TODO"
-      AZURE_FUNCTIONAPP_NAME: "TODO"
-    defaults:
-      run:
-        working-directory: ${{env.WORKDIR}}
-
     steps:
-    - name: "Checkout"
+    - name: 'Checkout GitHub action'
+      uses: actions/checkout@v2
 
-    #- name: Setup .NET
-    - name: Setup DotNet 2.2.402 Environment
+    - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 2.2.402
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Build and Test a project
-
-    - name: 'Run Azure Functions Action'
-
+    - name: 'Resolve Project Dependencies Using Dotnet'
+      shell: pwsh
+      run: |
+        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        dotnet build --configuration Release --output ./output
+        popd
+    - name: 'Run Azure Functions action'
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}

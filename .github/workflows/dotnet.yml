@@ -1,7 +1,6 @@
 name: Deploy DotNet project to function app with a Windows environment
 
 on:
-  push:
   workflow_dispatch:
 
 env:
